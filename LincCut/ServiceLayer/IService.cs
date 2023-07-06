@@ -8,7 +8,7 @@ namespace LincCut.ServiceLayer
 {
     public interface IService
     {
-        Task<UrlInfo> OkAddUrlAsync(IUrlInfoRepository repository, string url, IClickRepository repositoryForClicks);
-        Task<string> OkRedirectResult(IUrlInfoRepository repository, string url, [Optional]int counter);
+        Task<UrlInfo> OkAddUrlAsync(IUrlInfoRepository repository, string url, IClickRepository repositoryForClicks, [Optional] int counter);
+        Task<string> OkRedirectResult(IUrlInfoRepository repository, string url);
     }
 }

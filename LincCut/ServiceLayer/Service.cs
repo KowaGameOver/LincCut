@@ -1,5 +1,7 @@
 ﻿using LincCut.Models;
 using LincCut.Repository;
+using System.Data.SqlTypes;
+using System.Diagnostics.Metrics;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
@@ -14,13 +16,15 @@ namespace LincCut.ServiceLayer
         private readonly IDetectionService _detectionService;
         private readonly Click newClick;
         private readonly UrlInfo newUrl;
+        private int counterIsOver = -1;
+        private int counterIsInfinity = 0;
         public Service(IDetectionService detectionService)
         {
             _detectionService = detectionService;
             newClick = new();
             newUrl = new();
         }
-        public async Task<UrlInfo> OkAddUrlAsync(IUrlInfoRepository repositoryForUrls,string url, IClickRepository repositoryForClicks)
+        public async Task<UrlInfo> OkAddUrlAsync(IUrlInfoRepository repositoryForUrls,string url, IClickRepository repositoryForClicks, [Optional] int counter)
         {
             if (url == null)
             {
@@ -34,8 +38,17 @@ namespace LincCut.ServiceLayer
             {
                 throw new NullReferenceException();
             }
+
             StringBuilder sb = new StringBuilder();
             newUrl.Url = url;
+            if (counter == counterIsInfinity)
+            {
+                newUrl.Counter = counterIsInfinity;
+            }
+            if(counter != counterIsInfinity)
+            {
+                newUrl.Counter = counter;
+            }
             await repositoryForUrls.CreateAsync(newUrl);
             var i = newUrl.Id;
             sb = await GenerateShortCut(sb, i);
@@ -48,25 +61,25 @@ namespace LincCut.ServiceLayer
             await repositoryForClicks.CreateAsync(newClick);
             return newUrl;
         }
-        public async Task<string> OkRedirectResult(IUrlInfoRepository repositoryForUrls, string url, [Optional] int counter)
+        public async Task<string> OkRedirectResult(IUrlInfoRepository repositoryForUrls, string url)
         {
             var newUrl = repositoryForUrls.CheckNewUrl(u => u.NewUrl == url);
             if (newUrl == null)
             {
                 throw new NullReferenceException();
             }
-            if (counter != 0 && newUrl.Counter == 0)
+            if (newUrl.Counter == counterIsOver)
             {
-                newUrl.Counter = counter+1;
-                await repositoryForUrls.UpdateAsync(newUrl);
+                throw new BadHttpRequestException("Counter is over! -> 404");
             }
-            if (newUrl.Counter != 0)
+            if (newUrl.Counter != counterIsInfinity && newUrl.Counter != counterIsOver)
             {
                 newUrl.Counter--;
                 await repositoryForUrls.UpdateAsync(newUrl);
-                if (newUrl.Counter == 0)
+                if (newUrl.Counter == counterIsInfinity)
                 {
-                    throw new BadHttpRequestException("Reference is out -> 404!");//ADD 404!!!
+                    newUrl.Counter = counterIsOver;
+                    await repositoryForUrls.UpdateAsync(newUrl);
                 }
             }
             return newUrl.Url;
