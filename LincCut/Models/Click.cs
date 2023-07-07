@@ -12,6 +12,5 @@ namespace LincCut.Models
         [ForeignKey("UrlInfos")]
         public int UrlInfo_id { get; set; }
         public UrlInfo UrlInfos { get; set; }
-        public string Language { get; set; } = string.Empty;
     }
 }

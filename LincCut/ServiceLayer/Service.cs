@@ -1,7 +1,5 @@
 ﻿using LincCut.Models;
 using LincCut.Repository;
-using System.Data.SqlTypes;
-using System.Diagnostics.Metrics;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
@@ -41,14 +39,7 @@ namespace LincCut.ServiceLayer
 
             StringBuilder sb = new StringBuilder();
             newUrl.Url = url;
-            if (counter == counterIsInfinity)
-            {
-                newUrl.Counter = counterIsInfinity;
-            }
-            if(counter != counterIsInfinity)
-            {
-                newUrl.Counter = counter;
-            }
+            await AddCounter(newUrl, counter);
             await repositoryForUrls.CreateAsync(newUrl);
             var i = newUrl.Id;
             sb = await GenerateShortCut(sb, i);
@@ -59,6 +50,7 @@ namespace LincCut.ServiceLayer
             newClick.Ip = await GetLocalIPAddress();
             newClick.Browser = _detectionService.Browser.Name.ToString();
             await repositoryForClicks.CreateAsync(newClick);
+
             return newUrl;
         }
         public async Task<string> OkRedirectResult(IUrlInfoRepository repositoryForUrls, string url)
@@ -72,16 +64,7 @@ namespace LincCut.ServiceLayer
             {
                 throw new BadHttpRequestException("Counter is over! -> 404");
             }
-            if (newUrl.Counter != counterIsInfinity && newUrl.Counter != counterIsOver)
-            {
-                newUrl.Counter--;
-                await repositoryForUrls.UpdateAsync(newUrl);
-                if (newUrl.Counter == counterIsInfinity)
-                {
-                    newUrl.Counter = counterIsOver;
-                    await repositoryForUrls.UpdateAsync(newUrl);
-                }
-            }
+            await CheckCounter(repositoryForUrls, newUrl);
             return newUrl.Url;
         }
         private static async Task<StringBuilder> GenerateShortCut(StringBuilder sb, int i)
@@ -107,6 +90,31 @@ namespace LincCut.ServiceLayer
                 }
             }
             return myip;
+        }
+        private async Task<UrlInfo> AddCounter(UrlInfo newUrl, int counter)
+        {
+            if (counter == counterIsInfinity)
+            {
+                newUrl.Counter = counterIsInfinity;
+            }
+            if (counter != counterIsInfinity)
+            {
+                newUrl.Counter = counter;
+            }
+            return newUrl;
+        }
+        private async Task CheckCounter(IUrlInfoRepository repositoryForUrls, UrlInfo newUrl)
+        {
+            if (newUrl.Counter != counterIsInfinity && newUrl.Counter != counterIsOver)
+            {
+                newUrl.Counter--;
+                await repositoryForUrls.UpdateAsync(newUrl);
+                if (newUrl.Counter == counterIsInfinity)
+                {
+                    newUrl.Counter = counterIsOver;
+                    await repositoryForUrls.UpdateAsync(newUrl);
+                }
+            }
         }
     }
 }
