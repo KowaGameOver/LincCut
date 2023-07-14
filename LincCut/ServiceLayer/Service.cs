@@ -40,7 +40,10 @@ namespace LincCut.ServiceLayer
             StringBuilder sb = new StringBuilder();
             newUrl.Url = url;
             newUrl.Created_at = DateTime.Now;
-            newUrl.Expired_at = newUrl.Created_at.AddMinutes(minutes);
+            if (minutes != 0)
+            {
+                newUrl.Expired_at = newUrl.Created_at.AddMinutes(minutes);
+            }
             await AddCounter(newUrl, counter);
             await repositoryForUrls.CreateAsync(newUrl);
             var i = newUrl.Id;
@@ -121,7 +124,7 @@ namespace LincCut.ServiceLayer
         }
         private async Task CheckMinutes(UrlInfo newUrl)
         {
-            if (newUrl.Expired_at <= DateTime.Now)
+            if (newUrl.Expired_at <= DateTime.Now && newUrl.Expired_at != DateTime.MinValue)
             {
                 throw new BadHttpRequestException("Reference is expired");
             }
