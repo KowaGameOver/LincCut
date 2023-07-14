@@ -22,7 +22,7 @@ namespace LincCut.ServiceLayer
             newClick = new();
             newUrl = new();
         }
-        public async Task<UrlInfo> OkAddUrlAsync(IUrlInfoRepository repositoryForUrls,string url, IClickRepository repositoryForClicks, [Optional] int counter)
+        public async Task<UrlInfo> OkAddUrlAsync(IUrlInfoRepository repositoryForUrls,string url, IClickRepository repositoryForClicks, [Optional] int counter, [Optional] int minutes)
         {
             if (url == null)
             {
@@ -39,6 +39,8 @@ namespace LincCut.ServiceLayer
 
             StringBuilder sb = new StringBuilder();
             newUrl.Url = url;
+            newUrl.Created_at = DateTime.Now;
+            newUrl.Expired_at = newUrl.Created_at.AddMinutes(minutes);
             await AddCounter(newUrl, counter);
             await repositoryForUrls.CreateAsync(newUrl);
             var i = newUrl.Id;
@@ -65,6 +67,7 @@ namespace LincCut.ServiceLayer
                 throw new BadHttpRequestException("Counter is over! -> 404");
             }
             await CheckCounter(repositoryForUrls, newUrl);
+            await CheckMinutes(newUrl);
             return newUrl.Url;
         }
         private static async Task<StringBuilder> GenerateShortCut(StringBuilder sb, int i)
@@ -116,5 +119,13 @@ namespace LincCut.ServiceLayer
                 }
             }
         }
+        private async Task CheckMinutes(UrlInfo newUrl)
+        {
+            if (newUrl.Expired_at <= DateTime.Now)
+            {
+                throw new BadHttpRequestException("Reference is expired");
+            }
+        }
+        
     }
 }
