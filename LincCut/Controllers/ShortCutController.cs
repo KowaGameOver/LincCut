@@ -23,12 +23,12 @@ namespace LincCut.Controllers
         [HttpPost(Name = "/AddUrl")]
         public async Task<ActionResult<UrlInfo>> AddUrlAsync(string url, [Optional] int counter, [Optional] int minutes)
         {
-            return Ok(await _service.OkAddUrlAsync(_repositoryForUrlInfos, url, _repositoryForClicks, counter, minutes));
+            return Ok(await _service.OkAddUrlAsync(_repositoryForUrlInfos, url, counter, minutes));
         }
         [HttpGet("{url:alpha}")]
         public async Task<RedirectResult> RedirectResult(string url)
         {
-            return Redirect(await _service.OkRedirectResult(_repositoryForUrlInfos, url));
+            return Redirect(await _service.OkRedirectResult(_repositoryForUrlInfos,_repositoryForClicks, url));
         }
     }
 }

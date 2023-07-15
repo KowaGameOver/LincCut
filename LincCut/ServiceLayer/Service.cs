@@ -14,7 +14,6 @@ namespace LincCut.ServiceLayer
         private readonly IDetectionService _detectionService;
         private readonly Click newClick;
         private readonly UrlInfo newUrl;
-        private int counterIsOver = -1;
         private int counterIsInfinity = 0;
         public Service(IDetectionService detectionService)
         {
@@ -22,17 +21,13 @@ namespace LincCut.ServiceLayer
             newClick = new();
             newUrl = new();
         }
-        public async Task<UrlInfo> OkAddUrlAsync(IUrlInfoRepository repositoryForUrls,string url, IClickRepository repositoryForClicks, [Optional] int counter, [Optional] int minutes)
+        public async Task<UrlInfo> OkAddUrlAsync(IUrlInfoRepository repositoryForUrls,string url, [Optional] int counter, [Optional] int minutes)
         {
             if (url == null)
             {
                 throw new NullReferenceException();//ADD EXCEPTION filtering!
             }
             if (repositoryForUrls == null)
-            {
-                throw new NullReferenceException();
-            }
-            if (repositoryForClicks == null)
             {
                 throw new NullReferenceException();
             }
@@ -51,26 +46,25 @@ namespace LincCut.ServiceLayer
             newUrl.NewUrl = sb.ToString();
             await repositoryForUrls.UpdateAsync(newUrl);
 
-            newClick.UrlInfo_id = newUrl.Id;
-            newClick.Ip = await GetLocalIPAddress();
-            newClick.Browser = _detectionService.Browser.Name.ToString();
-            await repositoryForClicks.CreateAsync(newClick);
-
             return newUrl;
         }
-        public async Task<string> OkRedirectResult(IUrlInfoRepository repositoryForUrls, string url)
+        public async Task<string> OkRedirectResult(IUrlInfoRepository repositoryForUrls, IClickRepository repositoryForClicks, string url)
         {
             var newUrl = repositoryForUrls.CheckNewUrl(u => u.NewUrl == url);
             if (newUrl == null)
             {
                 throw new NullReferenceException();
             }
-            if (newUrl.Counter == counterIsOver)
+            if (repositoryForClicks == null)
             {
-                throw new BadHttpRequestException("Counter is over! -> 404");
+                throw new NullReferenceException();
             }
-            await CheckCounter(repositoryForUrls, newUrl);
-            await CheckMinutes(newUrl);
+            newClick.UrlInfo_id = newUrl.Id;
+            newClick.Ip = await GetLocalIPAddress();
+            newClick.Browser = _detectionService.Browser.Name.ToString();
+            await repositoryForClicks.CreateAsync(newClick);
+            await CheckExpired(newUrl, repositoryForClicks, repositoryForUrls);
+
             return newUrl.Url;
         }
         private static async Task<StringBuilder> GenerateShortCut(StringBuilder sb, int i)
@@ -109,26 +103,17 @@ namespace LincCut.ServiceLayer
             }
             return newUrl;
         }
-        private async Task CheckCounter(IUrlInfoRepository repositoryForUrls, UrlInfo newUrl)
-        {
-            if (newUrl.Counter != counterIsInfinity && newUrl.Counter != counterIsOver)
-            {
-                newUrl.Counter--;
-                await repositoryForUrls.UpdateAsync(newUrl);
-                if (newUrl.Counter == counterIsInfinity)
-                {
-                    newUrl.Counter = counterIsOver;
-                    await repositoryForUrls.UpdateAsync(newUrl);
-                }
-            }
-        }
-        private async Task CheckMinutes(UrlInfo newUrl)
+        private async Task CheckExpired(UrlInfo newUrl, IClickRepository repositoryForClicks, IUrlInfoRepository repositoryForUrls)
         {
             if (newUrl.Expired_at <= DateTime.Now && newUrl.Expired_at != DateTime.MinValue)
             {
                 throw new BadHttpRequestException("Reference is expired");
             }
+            if (repositoryForClicks.CheckNewClick(c => c.UrlInfo_id == newUrl.Id) == newUrl.Counter)
+            {
+                newUrl.Expired_at = DateTime.Now;
+                await repositoryForUrls.UpdateAsync(newUrl);
+            }
         }
-        
     }
 }
