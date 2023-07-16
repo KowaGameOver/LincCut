@@ -2,7 +2,6 @@ using LincCut.Models;
 using LincCut.Repository;
 using LincCut.ServiceLayer;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics.Metrics;
 using System.Runtime.InteropServices;
 
 namespace LincCut.Controllers
@@ -25,7 +24,7 @@ namespace LincCut.Controllers
         {
             return Ok(await _service.OkAddUrlAsync(_repositoryForUrlInfos, url, counter, minutes));
         }
-        [HttpGet("{url:alpha}")]
+        [HttpGet("{url:required}")]
         public async Task<RedirectResult> RedirectResult(string url)
         {
             return Redirect(await _service.OkRedirectResult(_repositoryForUrlInfos,_repositoryForClicks, url));
