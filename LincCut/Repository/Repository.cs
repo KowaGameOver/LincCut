@@ -10,9 +10,9 @@ namespace LincCut.Repository
     {
         private readonly AppDbContext _db;
         private readonly DbSet<T> _dbSet;
-        public Repository()
+        public Repository(AppDbContext db)
         {
-            _db = new AppDbContext();
+            _db = db;
             _dbSet = _db.Set<T>();
         }
         public async Task UpdateAsync(T entity)

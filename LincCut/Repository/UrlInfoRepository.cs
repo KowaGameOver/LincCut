@@ -7,13 +7,13 @@ namespace LincCut.Repository
     public class UrlInfoRepository : Repository<UrlInfo>, IUrlInfoRepository
     {
         private readonly AppDbContext _db;
-        public UrlInfoRepository()
+        public UrlInfoRepository(AppDbContext db):base(db)
         {
-            _db = new();
+            _db = db;
         }
         public UrlInfo CheckNewUrl(Expression<Func<UrlInfo, bool>>? filter = null)
         {
-            IQueryable<UrlInfo> query = _db.UrlInfos;
+            IQueryable<UrlInfo> query = _db.urls;
             if (filter != null)
             {
                 query = query.Where(filter);

@@ -10,26 +10,30 @@ namespace LincCut.ServiceLayer
 {
     public class Service : IService
     {
-        private const string alphabet = "ELuPNUJqxdViYhjT8H-kt3MzFwmO0AyvDK2bSlrInBos9ef_5Q16ZCaXGcRWg7p4";
+        //https://localhost:7022/U
+        private readonly IConfiguration _config;
         private readonly IDetectionService _detectionService;
         private readonly Click newClick;
         private readonly UrlInfo newUrl;
         private int counterIsInfinity = 0;
-        public Service(IDetectionService detectionService)
+        private readonly string alphabet;
+        public Service(IDetectionService detectionService, IConfiguration config)
         {
             _detectionService = detectionService;
+            _config = config;
             newClick = new();
             newUrl = new();
+            alphabet = _config["LincCut:alphabet"];
         }
         public async Task<UrlInfo> OkAddUrlAsync(IUrlInfoRepository repositoryForUrls,string url, [Optional] int counter, [Optional] int minutes)
         {
             if (url == null)
             {
-                throw new NullReferenceException();//ADD EXCEPTION filtering!
+                throw new BadHttpRequestException("Url is null");//ADD EXCEPTION filtering!
             }
             if (repositoryForUrls == null)
             {
-                throw new NullReferenceException();
+                throw new BadHttpRequestException("Urls repository is null");
             }
 
             StringBuilder sb = new StringBuilder();
@@ -53,11 +57,11 @@ namespace LincCut.ServiceLayer
             var newUrl = repositoryForUrls.CheckNewUrl(u => u.NewUrl == url);
             if (newUrl == null)
             {
-                throw new NullReferenceException();
+                throw new BadHttpRequestException("New url is null");
             }
             if (repositoryForClicks == null)
             {
-                throw new NullReferenceException();
+                throw new BadHttpRequestException("CLicks repository is null");
             }
             newClick.UrlInfo_id = newUrl.Id;
             newClick.Ip = await GetLocalIPAddress();
@@ -67,7 +71,7 @@ namespace LincCut.ServiceLayer
 
             return newUrl.Url;
         }
-        private static async Task<StringBuilder> GenerateShortCut(StringBuilder sb, int i)
+        private async Task<StringBuilder> GenerateShortCut(StringBuilder sb, int i)
         {
             do
             {

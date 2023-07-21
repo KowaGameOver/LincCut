@@ -1,20 +1,22 @@
-using LincCut.Models;
+using LincCut.Data;
 using LincCut.Repository;
 using LincCut.ServiceLayer;
 using Microsoft.AspNetCore.Authentication.Negotiate;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddCors();
+builder.Services.AddDbContext<AppDbContext>(options =>
+options.UseNpgsql(builder.Configuration["LincCut:dbconnection"]));
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IService, Service>();
 builder.Services.AddScoped<IUrlInfoRepository, UrlInfoRepository>();
 builder.Services.AddScoped<IClickRepository, ClickRepository>();
 builder.Services.AddDetection();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 builder.Services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)
    .AddNegotiate();
@@ -27,7 +29,7 @@ builder.Services.AddAuthorization(options =>
 
 var app = builder.Build();
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
-app.UseCors(builder => builder.WithOrigins("https://localhost:7022", "http://google.com").AllowAnyHeader().AllowAnyMethod());
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

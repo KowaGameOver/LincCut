@@ -9,7 +9,7 @@ namespace LincCut.Controllers
     [ApiController]
     [Route("")]
     public class ShortCutController : ControllerBase
-    {//
+    {
         private readonly IUrlInfoRepository _repositoryForUrlInfos;
         private readonly IClickRepository _repositoryForClicks;
         private readonly IService _service;
