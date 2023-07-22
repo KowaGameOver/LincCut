@@ -1,4 +1,6 @@
-﻿using LincCut.Models;
+﻿using AutoMapper;
+using LincCut.Mocks;
+using LincCut.Models;
 using LincCut.Repository;
 using System.Net;
 using System.Net.Sockets;
@@ -10,22 +12,26 @@ namespace LincCut.ServiceLayer
 {
     public class Service : IService
     {
-        //https://localhost:7022/U
+        private readonly string host;
+        private readonly IMapper _mapper;
         private readonly IConfiguration _config;
         private readonly IDetectionService _detectionService;
         private readonly Click newClick;
         private readonly UrlInfo newUrl;
+        private UrlInfoDto newUrlDto;
         private int counterIsInfinity = 0;
         private readonly string alphabet;
-        public Service(IDetectionService detectionService, IConfiguration config)
+        public Service(IDetectionService detectionService, IConfiguration config, IMapper mapper)
         {
+            _mapper = mapper;
             _detectionService = detectionService;
             _config = config;
             newClick = new();
             newUrl = new();
             alphabet = _config["LincCut:alphabet"];
+            host = _config["LincCut:hostname"];
         }
-        public async Task<UrlInfo> OkAddUrlAsync(IUrlInfoRepository repositoryForUrls,string url, [Optional] int counter, [Optional] int minutes)
+        public async Task<UrlInfoDto> OkAddUrlAsync(IUrlInfoRepository repositoryForUrls,string url, [Optional] int counter, [Optional] DateTime date)
         {
             if (url == null)
             {
@@ -35,13 +41,12 @@ namespace LincCut.ServiceLayer
             {
                 throw new BadHttpRequestException("Urls repository is null");
             }
-
             StringBuilder sb = new StringBuilder();
             newUrl.Url = url;
             newUrl.Created_at = DateTime.Now;
-            if (minutes != 0)
+            if (date != DateTime.MinValue)
             {
-                newUrl.Expired_at = newUrl.Created_at.AddMinutes(minutes);
+                newUrl.Expired_at = date;
             }
             await AddCounter(newUrl, counter);
             await repositoryForUrls.CreateAsync(newUrl);
@@ -49,8 +54,10 @@ namespace LincCut.ServiceLayer
             sb = await GenerateShortCut(sb, i);
             newUrl.NewUrl = sb.ToString();
             await repositoryForUrls.UpdateAsync(newUrl);
+            newUrlDto = _mapper.Map<UrlInfoDto>(newUrl);
+            newUrlDto.NewUrl = string.Concat(host,newUrl.NewUrl);
 
-            return newUrl;
+            return newUrlDto;
         }
         public async Task<string> OkRedirectResult(IUrlInfoRepository repositoryForUrls, IClickRepository repositoryForClicks, string url)
         {

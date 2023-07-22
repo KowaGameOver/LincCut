@@ -1,3 +1,4 @@
+using LincCut.Mocks;
 using LincCut.Models;
 using LincCut.Repository;
 using LincCut.ServiceLayer;
@@ -20,9 +21,9 @@ namespace LincCut.Controllers
             _repositoryForClicks = repositoryForClicks;
         }
         [HttpPost(Name = "/AddUrl")]
-        public async Task<ActionResult<UrlInfo>> AddUrlAsync(string url, [Optional] int counter, [Optional] int minutes)
+        public async Task<ActionResult<UrlInfoDto>> AddUrlAsync(string url, [Optional] int counter, [Optional] DateTime date)
         {
-            return Ok(await _service.OkAddUrlAsync(_repositoryForUrlInfos, url, counter, minutes));
+            return Ok(await _service.OkAddUrlAsync(_repositoryForUrlInfos, url, counter, date));
         }
         [HttpGet("{url:required}")]
         public async Task<RedirectResult> RedirectResult(string url)

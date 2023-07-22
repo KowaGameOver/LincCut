@@ -1,3 +1,4 @@
+using LincCut;
 using LincCut.Data;
 using LincCut.Repository;
 using LincCut.ServiceLayer;
@@ -9,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddDbContext<AppDbContext>(options =>
 options.UseNpgsql(builder.Configuration["LincCut:dbconnection"]));
+builder.Services.AddAutoMapper(typeof(MappingConfig));
 builder.Services.AddControllers();
 builder.Services.AddScoped<IService, Service>();
 builder.Services.AddScoped<IUrlInfoRepository, UrlInfoRepository>();
