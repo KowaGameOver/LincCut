@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddDbContext<AppDbContext>(options =>
-options.UseNpgsql(builder.Configuration["LincCut:dbconnection"]));
+options.UseNpgsql(builder.Configuration.GetConnectionString("ConnectionStrings:DefaultSQLConnection")));
 builder.Services.AddAutoMapper(typeof(MappingConfig));
 builder.Services.AddControllers();
 builder.Services.AddScoped<IService, Service>();
