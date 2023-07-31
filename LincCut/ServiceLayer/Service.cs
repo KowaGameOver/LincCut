@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using LincCut.AppSettings;
 using LincCut.Mocks;
 using LincCut.Models;
 using LincCut.Repository;
+using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
@@ -12,24 +14,22 @@ namespace LincCut.ServiceLayer
 {
     public class Service : IService
     {
-        private readonly string host;
         private readonly IMapper _mapper;
-        private readonly IConfiguration _config;
+        private readonly IOptions<HostName> hostName;
+        private readonly IOptions<Alphabet> alphabet;
         private readonly IDetectionService _detectionService;
         private readonly Click newClick;
         private readonly UrlInfo newUrl;
         private UrlInfoDto newUrlDto;
         private int counterIsInfinity = 0;
-        private readonly string alphabet;
-        public Service(IDetectionService detectionService, IConfiguration config, IMapper mapper)
+        public Service(IDetectionService detectionService, IOptions<HostName> hostName, IOptions<Alphabet> alphabet, IMapper mapper)
         {
             _mapper = mapper;
             _detectionService = detectionService;
-            _config = config;
             newClick = new();
             newUrl = new();
-            alphabet = _config["LincCut:alphabet"];
-            host = _config["LincCut:hostname"];
+            this.hostName = hostName;
+            this.alphabet = alphabet;
         }
         public async Task<UrlInfoDto> OkAddUrlAsync(IUrlInfoRepository repositoryForUrls,string url, [Optional] int counter, [Optional] DateTime date)
         {
@@ -55,7 +55,7 @@ namespace LincCut.ServiceLayer
             newUrl.NewUrl = sb.ToString();
             await repositoryForUrls.UpdateAsync(newUrl);
             newUrlDto = _mapper.Map<UrlInfoDto>(newUrl);
-            newUrlDto.NewUrl = string.Concat(host,newUrl.NewUrl);
+            newUrlDto.NewUrl = string.Concat(hostName.Value.hostName,newUrl.NewUrl);
 
             return newUrlDto;
         }
@@ -82,7 +82,7 @@ namespace LincCut.ServiceLayer
         {
             do
             {
-                sb.Insert(0, alphabet[i % 64]);
+                sb.Insert(0, alphabet.Value.alphabet[i % 64]);
                 i = i / 64;
             }
             while (i != 0);

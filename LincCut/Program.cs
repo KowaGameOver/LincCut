@@ -1,4 +1,5 @@
 using LincCut;
+using LincCut.AppSettings;
 using LincCut.Data;
 using LincCut.Repository;
 using LincCut.ServiceLayer;
@@ -9,12 +10,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddDbContext<AppDbContext>(options =>
-options.UseNpgsql(builder.Configuration.GetConnectionString("ConnectionStrings:DefaultSQLConnection")));
+options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultSQLConnection")));
 builder.Services.AddAutoMapper(typeof(MappingConfig));
 builder.Services.AddControllers();
 builder.Services.AddScoped<IService, Service>();
 builder.Services.AddScoped<IUrlInfoRepository, UrlInfoRepository>();
 builder.Services.AddScoped<IClickRepository, ClickRepository>();
+builder.Services.Configure<HostName>(builder.Configuration.GetSection("HostName"));
+builder.Services.Configure<Alphabet>(builder.Configuration.GetSection("Alphabet"));
 builder.Services.AddDetection();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

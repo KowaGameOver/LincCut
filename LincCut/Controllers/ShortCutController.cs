@@ -1,3 +1,4 @@
+using LincCut.AppSettings;
 using LincCut.Mocks;
 using LincCut.Models;
 using LincCut.Repository;
