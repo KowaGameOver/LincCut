@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using Wangkanai.Detection.Services;
 
 namespace LincCut.ServiceLayer
@@ -22,6 +23,13 @@ namespace LincCut.ServiceLayer
         private readonly UrlInfo newUrl;
         private UrlInfoDto newUrlDto;
         private int counterIsInfinity = 0;
+        private const string strRegex = @"((http|https)://)(www.)?" +
+      "[a-zA-Z0-9@:%._\\+~#?&//=]" +
+      "{2,256}\\.[a-z]" +
+      "{2,6}\\b([-a-zA-Z0-9@:%" +
+      "._\\+~#?&//=]*)";
+        Regex re = new Regex(strRegex);
+
         public Service(IDetectionService detectionService, IOptions<HostName> hostName, IOptions<Alphabet> alphabet, IMapper mapper)
         {
             _mapper = mapper;
@@ -45,7 +53,7 @@ namespace LincCut.ServiceLayer
             {
                 throw new BadHttpRequestException("Urls repository is null");
             }
-            if (url.StartsWith("http://") || url.StartsWith("https://"))
+            if (re.IsMatch(url))
             {
                 StringBuilder sb = new StringBuilder();
                 newUrl.Url = url;
