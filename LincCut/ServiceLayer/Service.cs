@@ -35,27 +35,38 @@ namespace LincCut.ServiceLayer
         {
             if (url == null)
             {
-                throw new BadHttpRequestException("Url is null");//ADD EXCEPTION filtering!
+                throw new BadHttpRequestException("Url is null");
+            }
+            if (url.Contains(hostName.Value.hostName))
+            {
+                throw new BadHttpRequestException("You can`t make short link for this site!");
             }
             if (repositoryForUrls == null)
             {
                 throw new BadHttpRequestException("Urls repository is null");
             }
-            StringBuilder sb = new StringBuilder();
-            newUrl.Url = url;
-            newUrl.Created_at = DateTime.Now;
-            if (date != DateTime.MinValue)
+            if (url.StartsWith("http://") || url.StartsWith("https://"))
             {
-                newUrl.Expired_at = date;
+                StringBuilder sb = new StringBuilder();
+                newUrl.Url = url;
+                newUrl.Created_at = DateTime.Now;
+                if (date != DateTime.MinValue)
+                {
+                    newUrl.Expired_at = date;
+                }
+                await AddCounter(newUrl, counter);
+                await repositoryForUrls.CreateAsync(newUrl);
+                var i = newUrl.Id;
+                sb = await GenerateShortCut(sb, i);
+                newUrl.NewUrl = sb.ToString();
+                await repositoryForUrls.UpdateAsync(newUrl);
+                newUrlDto = _mapper.Map<UrlInfoDto>(newUrl);
+                newUrlDto.NewUrl = string.Concat(hostName.Value.hostName, newUrl.NewUrl);
             }
-            await AddCounter(newUrl, counter);
-            await repositoryForUrls.CreateAsync(newUrl);
-            var i = newUrl.Id;
-            sb = await GenerateShortCut(sb, i);
-            newUrl.NewUrl = sb.ToString();
-            await repositoryForUrls.UpdateAsync(newUrl);
-            newUrlDto = _mapper.Map<UrlInfoDto>(newUrl);
-            newUrlDto.NewUrl = string.Concat(hostName.Value.hostName,newUrl.NewUrl);
+            else
+            {
+                throw new BadHttpRequestException("Invalid reference!");
+            }
 
             return newUrlDto;
         }

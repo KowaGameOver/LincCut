@@ -1,6 +1,4 @@
-using LincCut.AppSettings;
 using LincCut.Mocks;
-using LincCut.Models;
 using LincCut.Repository;
 using LincCut.ServiceLayer;
 using Microsoft.AspNetCore.Mvc;

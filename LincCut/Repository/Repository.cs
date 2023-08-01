@@ -1,8 +1,5 @@
 ﻿using LincCut.Data;
-using LincCut.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
-using System.Linq;
 
 namespace LincCut.Repository
 {

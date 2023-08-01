@@ -11,6 +11,6 @@ namespace LincCut.Models
         public string Browser { get; set; } = string.Empty;
         [ForeignKey("UrlInfos")]
         public int UrlInfo_id { get; set; }
-        public UrlInfo UrlInfos { get; set; }
+        public UrlInfo UrlInfos { get; set; } = null!;
     }
 }

@@ -1,10 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace LincCut.Models
 {
-    [Index("NewUrl", IsUnique = true)]
     public class UrlInfo
     {
         [Key]
