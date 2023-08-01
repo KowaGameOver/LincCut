@@ -1,7 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
-
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 namespace LincCut.Models
 {
+    [Index(nameof(NewUrl), IsUnique = true)]
     public class UrlInfo
     {
         [Key]
