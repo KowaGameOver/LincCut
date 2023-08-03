@@ -5,6 +5,6 @@ namespace LincCut.Repository
 {
     public interface IClickRepository : IRepository<Click>
     {
-        int CheckNewClick(Expression<Func<Click, bool>>? filter = null);
+        Task<int> CheckNewClickAsync(Expression<Func<Click, bool>>? filter = null);
     }
 }

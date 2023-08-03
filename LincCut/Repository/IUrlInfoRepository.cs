@@ -5,6 +5,7 @@ namespace LincCut.Repository
 {
     public interface IUrlInfoRepository : IRepository<UrlInfo>
     {
-        UrlInfo CheckNewUrl(Expression<Func<UrlInfo, bool>>? filter = null);
+        Task<UrlInfo> CheckNewUrlAsync(Expression<Func<UrlInfo, bool>>? filter = null);
+        Task DeleteUrlAsync(UrlInfo url, IUrlInfoRepository urlInfoRepository);
     }
 }

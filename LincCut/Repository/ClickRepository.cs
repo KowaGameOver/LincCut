@@ -1,5 +1,6 @@
 ﻿using LincCut.Data;
 using LincCut.Models;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace LincCut.Repository
@@ -11,14 +12,14 @@ namespace LincCut.Repository
         {
             _db = db;
         }
-        public int CheckNewClick(Expression<Func<Click, bool>>? filter = null)
+        public async Task<int> CheckNewClickAsync(Expression<Func<Click, bool>>? filter = null)
         {
             IQueryable<Click> query = _db.clicks;
             if (filter != null)
             {
                 query = query.Where(filter);
             }
-            return query.Count();
+            return await query.CountAsync();
         }
     }
 }

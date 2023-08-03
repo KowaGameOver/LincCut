@@ -1,5 +1,6 @@
 ﻿using LincCut.Data;
 using LincCut.Models;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace LincCut.Repository
@@ -11,14 +12,20 @@ namespace LincCut.Repository
         {
             _db = db;
         }
-        public UrlInfo CheckNewUrl(Expression<Func<UrlInfo, bool>>? filter = null)
+        public async Task<UrlInfo> CheckNewUrlAsync(Expression<Func<UrlInfo, bool>>? filter = null)
         {
             IQueryable<UrlInfo> query = _db.urls;
             if (filter != null)
             {
                 query = query.Where(filter);
             }
-            return query.FirstOrDefault();
+            return await query.FirstOrDefaultAsync();
+        }
+
+        public async Task DeleteUrlAsync(UrlInfo url, IUrlInfoRepository urlInfoRepository)
+        {
+            url.Expired_at = DateTime.Now;
+            await urlInfoRepository.UpdateAsync(url);
         }
     }
 }

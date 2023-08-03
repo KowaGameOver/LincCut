@@ -6,8 +6,8 @@ using System.Runtime.InteropServices;
 
 namespace LincCut.Controllers
 {
-    [ApiController]
     [Route("")]
+    [ApiController]
     public class ShortCutController : ControllerBase
     {
         private readonly IUrlInfoRepository _repositoryForUrlInfos;
@@ -19,15 +19,20 @@ namespace LincCut.Controllers
             _service = service;
             _repositoryForClicks = repositoryForClicks;
         }
-        [HttpPost(Name = "/AddUrl")]
+        [HttpPost("/api/shorten")]
         public async Task<ActionResult<UrlInfoDto>> AddUrlAsync(string url, [Optional] int counter, [Optional] DateTime date)
         {
             return Ok(await _service.OkAddUrlAsync(_repositoryForUrlInfos, url, counter, date));
         }
         [HttpGet("{url:required}")]
-        public async Task<RedirectResult> RedirectResult(string url)
+        public async Task<RedirectResult> RedirectResultAsync(string url)
         {
-            return Redirect(await _service.OkRedirectResult(_repositoryForUrlInfos,_repositoryForClicks, url));
+            return Redirect(await _service.OkRedirectResultAsync(_repositoryForUrlInfos,_repositoryForClicks, url));
+        }
+        [HttpDelete("/api/delete/{url:required}")]
+        public async Task DeleteUrlAsync(string url)
+        {
+            await _service.OkDeleteUrlAsync(url,_repositoryForUrlInfos);
         }
     }
 }
