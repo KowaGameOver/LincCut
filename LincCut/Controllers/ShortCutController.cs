@@ -29,7 +29,7 @@ namespace LincCut.Controllers
         {
             return Redirect(await _service.OkRedirectResultAsync(_repositoryForUrlInfos,_repositoryForClicks, url));
         }
-        [HttpDelete("/api/delete/{url:required}")]
+        [HttpDelete("/api/delete")]
         public async Task DeleteUrlAsync(string url)
         {
             await _service.OkDeleteUrlAsync(url,_repositoryForUrlInfos);
