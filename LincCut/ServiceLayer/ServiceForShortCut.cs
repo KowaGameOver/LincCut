@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using LincCut.AppSettings;
+using LincCut.Dto;
 using LincCut.Mocks;
 using LincCut.Models;
 using LincCut.Repository;
@@ -13,7 +14,7 @@ using Wangkanai.Detection.Services;
 
 namespace LincCut.ServiceLayer
 {
-    public class Service : IService
+    public class ServiceForShortCut : IServiceForShortCut
     {
         private readonly IMapper _mapper;
         private readonly IOptions<HostName> hostName;
@@ -30,7 +31,7 @@ namespace LincCut.ServiceLayer
       "._\\+~#?&//=]*)";
         Regex re = new Regex(strRegex);
 
-        public Service(IDetectionService detectionService, IOptions<HostName> hostName, IOptions<Alphabet> alphabet, IMapper mapper)
+        public ServiceForShortCut(IDetectionService detectionService, IOptions<HostName> hostName, IOptions<Alphabet> alphabet, IMapper mapper)
         {
             _mapper = mapper;
             _detectionService = detectionService;
@@ -39,13 +40,13 @@ namespace LincCut.ServiceLayer
             this.hostName = hostName;
             this.alphabet = alphabet;
         }
-        public async Task<UrlInfoDto> OkAddUrlAsync(IUrlInfoRepository repositoryForUrls,string url, [Optional] int counter, [Optional] DateTime date)
+        public async Task<UrlInfoDto> OkAddUrlAsync(IUrlInfoRepository repositoryForUrls, UrlInfoAddDTO urlInfoAddDTO, DateTime dateForExpire)
         {
-            if (string.IsNullOrEmpty(url))
+            if (string.IsNullOrEmpty(urlInfoAddDTO.Url))
             {
                 throw new BadHttpRequestException("Url must be entered");
             }
-            if (url.Contains(hostName.Value.hostName))
+            if (urlInfoAddDTO.Url.Contains(hostName.Value.hostName))
             {
                 throw new BadHttpRequestException("You can`t make short link for this site!");
             }
@@ -53,16 +54,16 @@ namespace LincCut.ServiceLayer
             {
                 throw new BadHttpRequestException("Urls repository is null");
             }
-            if (re.IsMatch(url))
+            if (re.IsMatch(urlInfoAddDTO.Url))
             {
                 StringBuilder sb = new StringBuilder();
-                newUrl.Url = url;
+                newUrl.Url = urlInfoAddDTO.Url;
                 newUrl.Created_at = DateTime.Now;
-                if (date != DateTime.MinValue)
+                if (dateForExpire != DateTime.MinValue)
                 {
-                    newUrl.Expired_at = date;
+                    newUrl.Expired_at = dateForExpire;
                 }
-                await AddCounter(newUrl, counter);
+                await AddCounter(newUrl, urlInfoAddDTO.Counter);
                 await repositoryForUrls.CreateAsync(newUrl);
                 var i = newUrl.Id;
                 sb = await GenerateShortCut(sb, i);

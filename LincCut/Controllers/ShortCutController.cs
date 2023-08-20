@@ -1,3 +1,4 @@
+using LincCut.Dto;
 using LincCut.Mocks;
 using LincCut.Models;
 using LincCut.Repository;
@@ -13,17 +14,17 @@ namespace LincCut.Controllers
     {
         private readonly IUrlInfoRepository _repositoryForUrlInfos;
         private readonly IClickRepository _repositoryForClicks;
-        private readonly IService _service;
-        public ShortCutController(IUrlInfoRepository repository, IService service, IClickRepository repositoryForClicks)
+        private readonly IServiceForShortCut _service;
+        public ShortCutController(IUrlInfoRepository repository, IServiceForShortCut service, IClickRepository repositoryForClicks)
         {
             _repositoryForUrlInfos = repository;
             _service = service;
             _repositoryForClicks = repositoryForClicks;
         }
         [HttpPost("/api/shorten")]
-        public async Task<ActionResult<UrlInfoDto>> AddUrlAsync(string url, [Optional] int counter, [Optional] DateTime date)
+        public async Task<ActionResult<UrlInfoDto>> AddUrlAsync(UrlInfoAddDTO urlInfoAddDTO, [Optional]DateTime dateForExpire)
         {
-            return Ok(await _service.OkAddUrlAsync(_repositoryForUrlInfos, url, counter, date));
+            return Ok(await _service.OkAddUrlAsync(_repositoryForUrlInfos, urlInfoAddDTO, dateForExpire));
         }
         [HttpGet("{url:required}")]
         public async Task<RedirectResult> RedirectResultAsync(string url)
