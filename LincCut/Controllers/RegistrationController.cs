@@ -1,14 +1,10 @@
 ﻿using AutoMapper;
-using BCrypt.Net;
 using LincCut.Data;
 using LincCut.Dto;
-using LincCut.Mocks;
 using LincCut.Models;
-using LincCut.test;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -24,13 +20,11 @@ namespace LincCut.Controllers
         private readonly IConfiguration _configuration;
         private readonly AppDbContext _db;
         private readonly IMapper _mapper;
-        private readonly ITokenManager _tokenManager;
-        public RegistrationController(IConfiguration configuration, AppDbContext db, IMapper mapper, ITokenManager tokenManager)
+        public RegistrationController(IConfiguration configuration, AppDbContext db, IMapper mapper)
         {
             _configuration = configuration;
             _db = db;
             _mapper = mapper;
-            _tokenManager = tokenManager;
         }
         [HttpGet("/api/auth/guest")]
         public ActionResult<UserDTO> Guest()
@@ -58,13 +52,11 @@ namespace LincCut.Controllers
             newUser.Role = Roles.user;
             if (_db.users.AsNoTracking().FirstOrDefault(nu => nu.Id == newUser.Id) != null)
             {
-                _db.users.Update(newUser);
-                _db.SaveChanges();
+                _db.users.Update(newUser);_db.SaveChanges();
             }
             else
             {
-                _db.users.Add(newUser);
-                _db.SaveChanges();
+                _db.users.Add(newUser);_db.SaveChanges();
             }
             userDTO = _mapper.Map<UserDTO>(newUser);
             userDTO.Token = CreateToken(userDTO);
@@ -76,13 +68,11 @@ namespace LincCut.Controllers
             var passForCheck = HashPassword(userDTO.Password);
             var loginUser = _db.users.FirstOrDefault(e => e.Email == userDTO.Email);
             if (loginUser == null)
-            {
-                throw new BadHttpRequestException("Invalid login.");
-            }
+                return NotFound("Incorrect login");
+
             if (loginUser.Password != passForCheck)
-            {
-                throw new BadHttpRequestException("Invalid password.");
-            }
+                return NotFound("Incorrect password");
+
             loginUser.LastLogin = DateTime.Now;
             _db.users.Update(loginUser);
             _db.SaveChanges();
@@ -91,78 +81,48 @@ namespace LincCut.Controllers
             return Ok(userDTO);
         }
         [Authorize]
-        [HttpGet("test")]
-        public IActionResult GetUsers()
-        {
-            return Ok(_db.users);
-        }
-
-        [HttpPost("tokens/cancel")]
-        public async Task<IActionResult> CancelAccessToken()
-        {
-            await _tokenManager.DeactivateCurrentAsync();
-
-            return NoContent();
-        }
-        [Authorize]
         [HttpPost("/api/auth/logout")]
-        public ActionResult<string> LogOut()
+        public IActionResult LogOut()
         {
-            List<Claim> claims = new List<Claim>(User.Claims);
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
-                _configuration.GetSection("JWT:Token").Value!));
-
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);
-
-            var token = new JwtSecurityToken(
-                    claims: claims,
-                    expires: DateTime.Now,
-                    signingCredentials: creds
-                );
-
-            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-            return jwt;
+            HttpContext.Response.Cookies.Delete("jwtToken");
+            return Ok(new { message = "Logged out successfully" });
         }
+
         private string CreateToken(UserDTO userDTO)
         {
-            List<Claim> claims = new List<Claim>();
-            if (userDTO.Email == null)
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(
+                _configuration.GetSection("JWT:Token").Value!);
+
+            var tokenDescriptor = new SecurityTokenDescriptor
             {
-                claims.Add(new Claim(ClaimTypes.Role, userDTO.Role.ToString()));
-                claims.Add(new Claim("id", userDTO.Id.ToString()));
-            }
+                Subject = new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.Role, userDTO.Role.ToString()),
+                    new Claim("id", userDTO.Id.ToString()),
+                }),
+
+                Expires = DateTime.UtcNow.AddHours(1), 
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
             if (userDTO.Email != null)
-            {
-                claims.Add(new Claim(ClaimTypes.Role, userDTO.Role.ToString()));
-                claims.Add(new Claim(ClaimTypes.Email, userDTO.Email));
-                claims.Add(new Claim("id", userDTO.Id.ToString()));
-            }
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
-                _configuration.GetSection("JWT:Token").Value!));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);
-            var token = new JwtSecurityToken(
-                    claims: claims,
-                    expires: DateTime.Now.AddDays(365),
-                    signingCredentials: creds
-                );
-            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-            return jwt;
+                tokenDescriptor.Subject.AddClaim(new Claim(ClaimTypes.Email, userDTO.Email));
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            var tokenString = tokenHandler.WriteToken(token);
+            HttpContext.Response.Cookies.Append("jwtToken", tokenString);
+            return tokenString;
         }
         private string HashPassword(string password)
         {
-            using (SHA256 sha256 = SHA256.Create())
-            {
-                byte[] bytes = Encoding.UTF8.GetBytes(password);
-                byte[] hashBytes = sha256.ComputeHash(bytes);
+            using SHA256 sha256 = SHA256.Create();
+            byte[] bytes = Encoding.UTF8.GetBytes(password);
+            byte[] hashBytes = sha256.ComputeHash(bytes);
 
-                StringBuilder builder = new StringBuilder();
-                for (int i = 0; i < hashBytes.Length; i++)
-                {
-                    builder.Append(hashBytes[i].ToString("x2"));
-                }
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < hashBytes.Length; i++)
+                builder.Append(hashBytes[i].ToString("x2"));
 
-                return builder.ToString();
-            }
-        } 
+            return builder.ToString();
+        }
     }
 }

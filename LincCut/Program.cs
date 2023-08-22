@@ -1,14 +1,12 @@
 using LincCut;
 using LincCut.AppSettings;
 using LincCut.Data;
+using LincCut.Middleware;
 using LincCut.Repository;
 using LincCut.ServiceLayer;
-using LincCut.test;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.Filters;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,14 +19,6 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<IServiceForShortCut, ServiceForShortCut>();
 builder.Services.AddScoped<IUrlInfoRepository, UrlInfoRepository>();
 builder.Services.AddScoped<IClickRepository, ClickRepository>();
-
-//builder.Services.AddTransient<TokenManagerMiddleware>();
-//builder.Services.AddTransient<ITokenManager, TokenManager>();
-//builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-//builder.Services.AddDistributedRedisCache(r => {
-//r.Configuration = Configuration["redis:connectionString"];
-
-
 builder.Services.Configure<HostName>(builder.Configuration.GetSection("HostName"));
 builder.Services.Configure<Alphabet>(builder.Configuration.GetSection("Alphabet"));
 builder.Services.AddDetection();
@@ -41,22 +31,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8
                 .GetBytes(builder.Configuration.GetSection("JWT:Token").Value)),
             ValidateIssuer = false,
-            ValidateAudience = false
+            ValidateAudience = false,
+            ClockSkew = TimeSpan.Zero
         };
 });
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
-    {
-        Description = "Standart Authorization header usng the Bearer scheme (\"bearer {token}\")",
-        In = ParameterLocation.Header,
-        Name = "Authorization",
-        Type = SecuritySchemeType.ApiKey
-    });
-    options.OperationFilter<SecurityRequirementsOperationFilter>();
-});
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
@@ -68,9 +49,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseAuthentication();
+app.UseMiddleware<JwtTokenMiddleware>();
 
-//app.UseMiddleware<TokenManagerMiddleware>();
+app.UseAuthentication();
 
 app.UseAuthorization();
 

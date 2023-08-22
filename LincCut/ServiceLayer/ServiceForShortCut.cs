@@ -7,7 +7,6 @@ using LincCut.Repository;
 using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Sockets;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using Wangkanai.Detection.Services;
