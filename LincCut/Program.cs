@@ -16,9 +16,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultSQLConnection")));
 builder.Services.AddAutoMapper(typeof(MappingConfig));
 builder.Services.AddControllers();
+builder.Services.AddScoped<IServiceForAuth, ServiceForAuth>();
 builder.Services.AddScoped<IServiceForShortCut, ServiceForShortCut>();
 builder.Services.AddScoped<IUrlInfoRepository, UrlInfoRepository>();
 builder.Services.AddScoped<IClickRepository, ClickRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.Configure<HostName>(builder.Configuration.GetSection("HostName"));
 builder.Services.Configure<Alphabet>(builder.Configuration.GetSection("Alphabet"));
 builder.Services.AddDetection();

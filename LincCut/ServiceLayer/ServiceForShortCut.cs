@@ -42,17 +42,11 @@ namespace LincCut.ServiceLayer
         public async Task<UrlInfoDto> OkAddUrlAsync(IUrlInfoRepository repositoryForUrls, UrlInfoAddDTO urlInfoAddDTO, DateTime dateForExpire)
         {
             if (string.IsNullOrEmpty(urlInfoAddDTO.Url))
-            {
                 throw new BadHttpRequestException("Url must be entered");
-            }
             if (urlInfoAddDTO.Url.Contains(hostName.Value.hostName))
-            {
                 throw new BadHttpRequestException("You can`t make short link for this site!");
-            }
             if (repositoryForUrls == null)
-            {
                 throw new BadHttpRequestException("Urls repository is null");
-            }
             if (re.IsMatch(urlInfoAddDTO.Url))
             {
                 StringBuilder sb = new StringBuilder();
@@ -72,46 +66,33 @@ namespace LincCut.ServiceLayer
                 newUrlDto.NewUrl = string.Concat(hostName.Value.hostName, newUrl.NewUrl);
             }
             else
-            {
                 throw new BadHttpRequestException("Invalid reference!");
-            }
-
             return newUrlDto;
         }
         public async Task<string> OkRedirectResultAsync(IUrlInfoRepository repositoryForUrls, IClickRepository repositoryForClicks, string url)
         {
             if (string.IsNullOrEmpty(url))
-            {
                 throw new BadHttpRequestException("Url must be entered");
-            }
             if (repositoryForClicks == null)
-            {
                 throw new BadHttpRequestException("CLicks repository is null");
-            }
             var newUrl = await repositoryForUrls.CheckNewUrlAsync(u => u.NewUrl == url);
             if (newUrl == null)
-            {
                 throw new BadHttpRequestException("Invalid url");
-            }
             newClick.UrlInfo_id = newUrl.Id;
             newClick.Ip = await GetLocalIPAddress();
             newClick.Browser = _detectionService.Browser.Name.ToString();
             await repositoryForClicks.CreateAsync(newClick);
             await CheckExpired(newUrl, repositoryForClicks, repositoryForUrls);
-
             return newUrl.Url;
         }
         public async Task OkDeleteUrlAsync(string url, IUrlInfoRepository repositoryForUrls)
         {
             if (string.IsNullOrEmpty(url))
-            {
                 throw new BadHttpRequestException("Url must be entered");
-            }
             var urlForDelete = await repositoryForUrls.CheckNewUrlAsync(u => u.NewUrl == url);
             if (urlForDelete == null)
-            {
                 throw new BadHttpRequestException("Url didn`t found");
-            }
+
             await repositoryForUrls.DeleteUrlAsync(urlForDelete, repositoryForUrls);
         }
         private async Task<StringBuilder> GenerateShortCut(StringBuilder sb, int i)
@@ -141,21 +122,15 @@ namespace LincCut.ServiceLayer
         private async Task<UrlInfo> AddCounter(UrlInfo newUrl, int counter)
         {
             if (counter == counterIsInfinity)
-            {
                 newUrl.Counter = counterIsInfinity;
-            }
             if (counter != counterIsInfinity)
-            {
                 newUrl.Counter = counter;
-            }
             return newUrl;
         }
         private async Task CheckExpired(UrlInfo newUrl, IClickRepository repositoryForClicks, IUrlInfoRepository repositoryForUrls)
         {
             if (newUrl.Expired_at <= DateTime.Now && newUrl.Expired_at != DateTime.MinValue)
-            {
                 throw new BadHttpRequestException("Reference is expired");
-            }
             if (await repositoryForClicks.CheckNewClickAsync(c => c.UrlInfo_id == newUrl.Id) == newUrl.Counter)
             {
                 newUrl.Expired_at = DateTime.Now;
