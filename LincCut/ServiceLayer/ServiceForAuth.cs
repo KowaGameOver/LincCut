@@ -23,7 +23,7 @@ namespace LincCut.ServiceLayer
         {
             var user = new User();
             user.REGISTRATION_DATE = DateTime.Now;
-            user.LAST_LOGIN_DATE = DateTime.Now;
+            user.LAST_LOGIN = DateTime.Now;
             await userRepository.CreateAsync(user);
             var userDTO = _mapper.Map<UserDTO>(user);
             userDTO.TOKEN = await CreateToken(userDTO, httpContext);
@@ -39,7 +39,7 @@ namespace LincCut.ServiceLayer
             if (loginUser.PASSWORD != passForCheck)
                 throw new BadHttpRequestException("Incorrect password");
 
-            loginUser.LAST_LOGIN_DATE = DateTime.Now;
+            loginUser.LAST_LOGIN = DateTime.Now;
             await userRepository.UpdateAsync(loginUser);
             userDTO = _mapper.Map<UserDTO>(loginUser);
             userDTO.TOKEN = await CreateToken(userDTO, httpContext);
@@ -58,7 +58,7 @@ namespace LincCut.ServiceLayer
             userDTO.PASSWORD = passwordHash;
             var newUser = _mapper.Map<User>(userDTO);
             newUser.REGISTRATION_DATE = DateTime.Now;
-            newUser.LAST_LOGIN_DATE = DateTime.Now;
+            newUser.LAST_LOGIN = DateTime.Now;
             newUser.ROLE = Roles.user;
             if (await userRepository.userExist(nu => nu.ID == newUser.ID) != null)
                 await userRepository.UpdateAsync(newUser);

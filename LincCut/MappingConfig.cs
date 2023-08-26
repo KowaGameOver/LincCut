@@ -9,7 +9,7 @@ namespace LincCut
     {
         public MappingConfig()
         {
-            CreateMap<UrlInfo, UrlInfoDto>();
+            CreateMap<Url, UrlInfoDto>();
             CreateMap<UserDTO, User>();
             CreateMap<User, UserDTO>();
         }

@@ -3,9 +3,9 @@ using System.Linq.Expressions;
 
 namespace LincCut.Repository
 {
-    public interface IUrlInfoRepository : IRepository<UrlInfo>
+    public interface IUrlInfoRepository : IRepository<Url>
     {
-        Task<UrlInfo> CheckNewUrlAsync(Expression<Func<UrlInfo, bool>>? filter = null);
-        Task DeleteUrlAsync(UrlInfo url, IUrlInfoRepository urlInfoRepository);
+        Task<Url> CheckNewUrlAsync(Expression<Func<Url, bool>>? filter = null);
+        Task DeleteUrlAsync(Url url, IUrlInfoRepository urlInfoRepository);
     }
 }

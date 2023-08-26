@@ -1,11 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace LincCut.Models
 {
     [Index(nameof(SHORT_SLUG), IsUnique = true)]
-    public class UrlInfo
+    public class Url
     {
         [Key]
         public int ID { get; set; }
@@ -17,8 +17,8 @@ namespace LincCut.Models
         public DateTime EXPIRED_AT { get; set; }
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-ddTHH:mm}", ApplyFormatInEditMode = true)]
         public DateTime CREATED_AT { get; set; }
-        [ForeignKey("USER")]
+        [ForeignKey(nameof(USER))]
         public int USER_ID { get; set; }
-        public User USER { get; set; } = null!;
+        public User? USER { get; set; }
     }
 }

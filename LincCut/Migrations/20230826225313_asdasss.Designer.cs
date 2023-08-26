@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LincCut.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230826203517_Test11")]
-    partial class Test11
+    [Migration("20230826225313_asdasss")]
+    partial class asdasss
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -56,7 +56,7 @@ namespace LincCut.Migrations
                     b.ToTable("clicks");
                 });
 
-            modelBuilder.Entity("LincCut.Models.UrlInfo", b =>
+            modelBuilder.Entity("LincCut.Models.Url", b =>
                 {
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
@@ -139,17 +139,17 @@ namespace LincCut.Migrations
 
             modelBuilder.Entity("LincCut.Models.Click", b =>
                 {
-                    b.HasOne("LincCut.Models.UrlInfo", "URLIFOS")
+                    b.HasOne("LincCut.Models.Url", "URL")
                         .WithMany()
                         .HasForeignKey("URL_ID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_clicks_urls_url_id");
 
-                    b.Navigation("URLIFOS");
+                    b.Navigation("URL");
                 });
 
-            modelBuilder.Entity("LincCut.Models.UrlInfo", b =>
+            modelBuilder.Entity("LincCut.Models.Url", b =>
                 {
                     b.HasOne("LincCut.Models.User", "USER")
                         .WithMany()

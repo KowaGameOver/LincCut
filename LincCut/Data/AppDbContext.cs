@@ -12,8 +12,8 @@ namespace LincCut.Data
             base.OnModelCreating(modelBuilder);
             modelBuilder.ConvertToSnakeCase();
         }
-        public DbSet<UrlInfo> urls { get; set; }
         public DbSet<Click> clicks { get; set; }
         public DbSet<User> users { get; set; }
+        public DbSet<Url> urls { get; set; }
     }
 }

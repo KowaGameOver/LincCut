@@ -7,6 +7,7 @@ using LincCut.Repository;
 using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Claims;
 using System.Text;
 using System.Text.RegularExpressions;
 using Wangkanai.Detection.Services;
@@ -20,7 +21,7 @@ namespace LincCut.ServiceLayer
         private readonly IOptions<Alphabet> alphabet;
         private readonly IDetectionService _detectionService;
         private readonly Click newClick;
-        private readonly UrlInfo newUrl;
+        private readonly Url newUrl;
         private UrlInfoDto newUrlDto;
         private int counterIsInfinity = 0;
         private const string strRegex = @"((http|https)://)(www.)?" +
@@ -39,7 +40,7 @@ namespace LincCut.ServiceLayer
             this.hostName = hostName;
             this.alphabet = alphabet;
         }
-        public async Task<UrlInfoDto> OkAddUrlAsync(IUrlInfoRepository repositoryForUrls, UrlInfoAddDTO urlInfoAddDTO, DateTime dateForExpire)
+        public async Task<UrlInfoDto> OkAddUrlAsync(IUrlInfoRepository repositoryForUrls, UrlInfoAddDTO urlInfoAddDTO, DateTime dateForExpire, ClaimsPrincipal claimsPrincipal)
         {
             if (string.IsNullOrEmpty(urlInfoAddDTO.ORIGINAL_URL))
                 throw new BadHttpRequestException("Url must be entered");
@@ -52,6 +53,7 @@ namespace LincCut.ServiceLayer
                 StringBuilder sb = new StringBuilder();
                 newUrl.ORIGINAL_URL = urlInfoAddDTO.ORIGINAL_URL;
                 newUrl.CREATED_AT = DateTime.Now;
+                newUrl.USER_ID = int.Parse(claimsPrincipal.Claims.First(i => i.Type == "id").Value);
                 if (dateForExpire != DateTime.MinValue)
                 {
                     newUrl.EXPIRED_AT = dateForExpire;
@@ -78,7 +80,7 @@ namespace LincCut.ServiceLayer
             var newUrl = await repositoryForUrls.CheckNewUrlAsync(u => u.SHORT_SLUG == url);
             if (newUrl == null)
                 throw new BadHttpRequestException("Invalid url");
-            newClick.URL_ID = newUrl.ID;
+            newClick.URL_INFO_ID = newUrl.ID;
             newClick.IP = await GetLocalIPAddress();
             newClick.BROWSER = _detectionService.Browser.Name.ToString();
             await repositoryForClicks.CreateAsync(newClick);
@@ -119,7 +121,7 @@ namespace LincCut.ServiceLayer
             }
             return myip;
         }
-        private async Task<UrlInfo> AddCounter(UrlInfo newUrl, int counter)
+        private async Task<Url> AddCounter(Url newUrl, int counter)
         {
             if (counter == counterIsInfinity)
                 newUrl.MAX_CLICKS = counterIsInfinity;
@@ -127,11 +129,11 @@ namespace LincCut.ServiceLayer
                 newUrl.MAX_CLICKS = counter;
             return newUrl;
         }
-        private async Task CheckExpired(UrlInfo newUrl, IClickRepository repositoryForClicks, IUrlInfoRepository repositoryForUrls)
+        private async Task CheckExpired(Url newUrl, IClickRepository repositoryForClicks, IUrlInfoRepository repositoryForUrls)
         {
             if (newUrl.EXPIRED_AT <= DateTime.Now && newUrl.EXPIRED_AT != DateTime.MinValue)
                 throw new BadHttpRequestException("Reference is expired");
-            if (await repositoryForClicks.CheckNewClickAsync(c => c.URL_ID == newUrl.ID) == newUrl.MAX_CLICKS)
+            if (await repositoryForClicks.CheckNewClickAsync(c => c.URL_INFO_ID == newUrl.ID) == newUrl.MAX_CLICKS)
             {
                 newUrl.EXPIRED_AT = DateTime.Now;
                 await repositoryForUrls.UpdateAsync(newUrl);

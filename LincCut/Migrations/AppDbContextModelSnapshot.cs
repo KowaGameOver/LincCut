@@ -53,7 +53,7 @@ namespace LincCut.Migrations
                     b.ToTable("clicks");
                 });
 
-            modelBuilder.Entity("LincCut.Models.UrlInfo", b =>
+            modelBuilder.Entity("LincCut.Models.Url", b =>
                 {
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
@@ -136,17 +136,17 @@ namespace LincCut.Migrations
 
             modelBuilder.Entity("LincCut.Models.Click", b =>
                 {
-                    b.HasOne("LincCut.Models.UrlInfo", "URLINFOS")
+                    b.HasOne("LincCut.Models.Url", "URL")
                         .WithMany()
                         .HasForeignKey("URL_ID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_clicks_urls_url_id");
 
-                    b.Navigation("URLINFOS");
+                    b.Navigation("URL");
                 });
 
-            modelBuilder.Entity("LincCut.Models.UrlInfo", b =>
+            modelBuilder.Entity("LincCut.Models.Url", b =>
                 {
                     b.HasOne("LincCut.Models.User", "USER")
                         .WithMany()

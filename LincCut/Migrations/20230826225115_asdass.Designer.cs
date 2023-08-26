@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LincCut.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230826194017_SnakeCase")]
-    partial class SnakeCase
+    [Migration("20230826225115_asdass")]
+    partial class asdass
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,105 +27,111 @@ namespace LincCut.Migrations
 
             modelBuilder.Entity("LincCut.Models.Click", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ID"));
 
-                    b.Property<string>("Browser")
+                    b.Property<string>("BROWSER")
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("browser");
 
-                    b.Property<string>("Ip")
+                    b.Property<string>("IP")
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("ip");
 
-                    b.Property<int>("UrlInfo_id")
+                    b.Property<int>("URL_ID")
                         .HasColumnType("integer")
-                        .HasColumnName("url_info_id");
+                        .HasColumnName("url_id");
 
-                    b.HasKey("Id")
+                    b.HasKey("ID")
                         .HasName("pk_clicks");
 
-                    b.HasIndex("UrlInfo_id");
+                    b.HasIndex("URL_ID");
 
                     b.ToTable("clicks");
                 });
 
-            modelBuilder.Entity("LincCut.Models.UrlInfo", b =>
+            modelBuilder.Entity("LincCut.Models.Url", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ID"));
 
-                    b.Property<int>("Counter")
-                        .HasColumnType("integer")
-                        .HasColumnName("counter");
-
-                    b.Property<DateTime>("Created_at")
+                    b.Property<DateTime>("CREATED_AT")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
-                    b.Property<DateTime>("Expired_at")
+                    b.Property<DateTime>("EXPIRED_AT")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("expired_at");
 
-                    b.Property<string>("NewUrl")
+                    b.Property<int>("MAX_CLICKS")
+                        .HasColumnType("integer")
+                        .HasColumnName("max_clicks");
+
+                    b.Property<string>("ORIGINAL_URL")
                         .IsRequired()
                         .HasColumnType("text")
-                        .HasColumnName("new_url");
+                        .HasColumnName("original_url");
 
-                    b.Property<string>("Url")
+                    b.Property<string>("SHORT_SLUG")
                         .IsRequired()
                         .HasColumnType("text")
-                        .HasColumnName("url");
+                        .HasColumnName("short_slug");
 
-                    b.HasKey("Id")
+                    b.Property<int>("userid")
+                        .HasColumnType("integer")
+                        .HasColumnName("userid");
+
+                    b.HasKey("ID")
                         .HasName("pk_urls");
 
-                    b.HasIndex("NewUrl")
+                    b.HasIndex("SHORT_SLUG")
                         .IsUnique();
+
+                    b.HasIndex("userid");
 
                     b.ToTable("urls");
                 });
 
             modelBuilder.Entity("LincCut.Models.User", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ID"));
 
-                    b.Property<string>("Email")
+                    b.Property<string>("EMAIL")
                         .HasColumnType("text")
                         .HasColumnName("email");
 
-                    b.Property<DateTime>("LastLogin")
+                    b.Property<DateTime>("LAST_LOGIN_DATE")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("last_login");
+                        .HasColumnName("last_login_date");
 
-                    b.Property<string>("Password")
+                    b.Property<string>("PASSWORD")
                         .HasColumnType("text")
                         .HasColumnName("password");
 
-                    b.Property<DateTime>("RegistrationDate")
+                    b.Property<DateTime>("REGISTRATION_DATE")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("registration_date");
 
-                    b.Property<int>("Role")
+                    b.Property<int>("ROLE")
                         .HasColumnType("integer")
                         .HasColumnName("role");
 
-                    b.HasKey("Id")
+                    b.HasKey("ID")
                         .HasName("pk_users");
 
                     b.ToTable("users");
@@ -133,14 +139,26 @@ namespace LincCut.Migrations
 
             modelBuilder.Entity("LincCut.Models.Click", b =>
                 {
-                    b.HasOne("LincCut.Models.UrlInfo", "UrlInfos")
+                    b.HasOne("LincCut.Models.Url", "URL")
                         .WithMany()
-                        .HasForeignKey("UrlInfo_id")
+                        .HasForeignKey("URL_ID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_clicks_urls_url_info_id");
+                        .HasConstraintName("fk_clicks_urls_url_id");
 
-                    b.Navigation("UrlInfos");
+                    b.Navigation("URL");
+                });
+
+            modelBuilder.Entity("LincCut.Models.Url", b =>
+                {
+                    b.HasOne("LincCut.Models.User", "USER")
+                        .WithMany()
+                        .HasForeignKey("userid")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_urls_users_userid");
+
+                    b.Navigation("USER");
                 });
 #pragma warning restore 612, 618
         }

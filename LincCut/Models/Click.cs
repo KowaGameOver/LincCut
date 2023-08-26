@@ -9,8 +9,8 @@ namespace LincCut.Models
         public int ID { get; set; }
         public string IP { get; set; } = string.Empty;
         public string BROWSER { get; set; } = string.Empty;
-        [ForeignKey("URLINFOS")]
-        public int URL_ID { get; set; }
-        public UrlInfo URLINFOS { get; set; } = null!;
+        [ForeignKey(nameof(URL))]
+        public int URL_INFO_ID { get; set; }
+        public Url? URL { get; set; }
     }
 }
