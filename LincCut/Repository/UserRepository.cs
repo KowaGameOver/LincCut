@@ -12,7 +12,6 @@ namespace LincCut.Repository
         {
             _db = db;
         }
-
         public async Task<User> userExist(Expression<Func<User, bool>>? filter = null)
         {
             IQueryable<User> query = _db.users.AsNoTracking();

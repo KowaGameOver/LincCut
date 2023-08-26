@@ -5,11 +5,11 @@ namespace LincCut.Models
     public class User
     {
         [Key]
-        public int Id { get; set; }
-        public Roles Role { get; set; } = Roles.guest;
-        public string? Email { get; set; } = null;
-        public string? Password { get; set; } = null;
-        public DateTime LastLogin { get; set; }
-        public DateTime RegistrationDate { get; set; }
+        public int ID { get; set; }
+        public string? EMAIL { get; set; } = string.Empty;
+        public Roles ROLE { get; set; } = Roles.guest;
+        public string? PASSWORD { get; set; } = string.Empty;
+        public DateTime LAST_LOGIN_DATE { get; set; }
+        public DateTime REGISTRATION_DATE { get; set; }
     }
 }

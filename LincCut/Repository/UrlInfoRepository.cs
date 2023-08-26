@@ -24,7 +24,7 @@ namespace LincCut.Repository
 
         public async Task DeleteUrlAsync(UrlInfo url, IUrlInfoRepository urlInfoRepository)
         {
-            url.Expired_at = DateTime.Now;
+            url.EXPIRED_AT = DateTime.Now;
             await urlInfoRepository.UpdateAsync(url);
         }
     }

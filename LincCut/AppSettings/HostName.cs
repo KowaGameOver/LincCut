@@ -2,6 +2,6 @@
 {
     public class HostName
     {
-        public string hostName { get; set; } = null!;
+        public string hostName { get; set; } = string.Empty;
     }
 }

@@ -2,8 +2,6 @@
 using LincCut.Dto;
 using LincCut.Models;
 using LincCut.Repository;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -24,27 +22,27 @@ namespace LincCut.ServiceLayer
         public async Task<UserDTO> Guest(IUserRepository userRepository, HttpContext httpContext)
         {
             var user = new User();
-            user.RegistrationDate = DateTime.Now;
-            user.LastLogin = DateTime.Now;
+            user.REGISTRATION_DATE = DateTime.Now;
+            user.LAST_LOGIN_DATE = DateTime.Now;
             await userRepository.CreateAsync(user);
             var userDTO = _mapper.Map<UserDTO>(user);
-            userDTO.Token = await CreateToken(userDTO, httpContext);
+            userDTO.TOKEN = await CreateToken(userDTO, httpContext);
             return userDTO;
         }
         public async Task<UserDTO> LogIn(UserDTO userDTO, IUserRepository userRepository, HttpContext httpContext)
         {
-            var passForCheck = await HashPassword(userDTO.Password);
-            var loginUser = await userRepository.userExist(e => e.Email == userDTO.Email);
+            var passForCheck = await HashPassword(userDTO.PASSWORD);
+            var loginUser = await userRepository.userExist(e => e.EMAIL == userDTO.EMAIL);
             if (loginUser == null)
                 throw new BadHttpRequestException("Incorrect login");
 
-            if (loginUser.Password != passForCheck)
+            if (loginUser.PASSWORD != passForCheck)
                 throw new BadHttpRequestException("Incorrect password");
 
-            loginUser.LastLogin = DateTime.Now;
+            loginUser.LAST_LOGIN_DATE = DateTime.Now;
             await userRepository.UpdateAsync(loginUser);
             userDTO = _mapper.Map<UserDTO>(loginUser);
-            userDTO.Token = await CreateToken(userDTO, httpContext);
+            userDTO.TOKEN = await CreateToken(userDTO, httpContext);
             return userDTO;
         }
         public async Task<string> LogOut(HttpContext httpContext)
@@ -52,27 +50,22 @@ namespace LincCut.ServiceLayer
             httpContext.Response.Cookies.Delete("jwtToken");
             return "Logout succsessfully";
         }
-
         public async Task<UserDTO> Registration(UserDTO userDTO, HttpContext httpContext, IUserRepository userRepository, ClaimsPrincipal claimsPrincipal)
         {
             int id = int.Parse(claimsPrincipal.Claims.First(i => i.Type == "id").Value);
-            userDTO.Id = id;
-            var passwordHash = await HashPassword(userDTO.Password);
-            userDTO.Password = passwordHash;
+            userDTO.ID = id;
+            var passwordHash = await HashPassword(userDTO.PASSWORD);
+            userDTO.PASSWORD = passwordHash;
             var newUser = _mapper.Map<User>(userDTO);
-            newUser.RegistrationDate = DateTime.Now;
-            newUser.LastLogin = DateTime.Now;
-            newUser.Role = Roles.user;
-            if (await userRepository.userExist(nu => nu.Id == newUser.Id) != null)
-            {
+            newUser.REGISTRATION_DATE = DateTime.Now;
+            newUser.LAST_LOGIN_DATE = DateTime.Now;
+            newUser.ROLE = Roles.user;
+            if (await userRepository.userExist(nu => nu.ID == newUser.ID) != null)
                 await userRepository.UpdateAsync(newUser);
-            }
             else
-            {
                 await userRepository.CreateAsync(newUser);
-            }
             userDTO = _mapper.Map<UserDTO>(newUser);
-            userDTO.Token = await CreateToken(userDTO, httpContext);
+            userDTO.TOKEN = await CreateToken(userDTO, httpContext);
             return userDTO;
         }
         private async Task<string> CreateToken(UserDTO userDTO,HttpContext httpContext)
@@ -80,20 +73,19 @@ namespace LincCut.ServiceLayer
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(
                 _configuration.GetSection("JWT:Token").Value!);
-
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-                    new Claim(ClaimTypes.Role, userDTO.Role.ToString()),
-                    new Claim("id", userDTO.Id.ToString()),
+                    new Claim(ClaimTypes.Role, userDTO.ROLE.ToString()),
+                    new Claim("id", userDTO.ID.ToString()),
                 }),
 
                 Expires = DateTime.UtcNow.AddMinutes(1),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
-            if (userDTO.Email != null)
-                tokenDescriptor.Subject.AddClaim(new Claim(ClaimTypes.Email, userDTO.Email));
+            if (userDTO.EMAIL != null)
+                tokenDescriptor.Subject.AddClaim(new Claim(ClaimTypes.Email, userDTO.EMAIL));
             var token = tokenHandler.CreateToken(tokenDescriptor);
             var tokenString = tokenHandler.WriteToken(token);
             httpContext.Response.Cookies.Append("jwtToken", tokenString);
@@ -108,7 +100,6 @@ namespace LincCut.ServiceLayer
             StringBuilder builder = new StringBuilder();
             for (int i = 0; i < hashBytes.Length; i++)
                 builder.Append(hashBytes[i].ToString("x2"));
-
             return builder.ToString();
         }
     }

@@ -6,11 +6,11 @@ namespace LincCut.Models
     public class Click
     {
         [Key]
-        public int Id { get; set; }
-        public string Ip { get; set; } = string.Empty;
-        public string Browser { get; set; } = string.Empty;
-        [ForeignKey("UrlInfos")]
-        public int UrlInfo_id { get; set; }
-        public UrlInfo UrlInfos { get; set; } = null!;
+        public int ID { get; set; }
+        public string IP { get; set; } = string.Empty;
+        public string BROWSER { get; set; } = string.Empty;
+        [ForeignKey("URLINFOS")]
+        public int URL_ID { get; set; }
+        public UrlInfo URLINFOS { get; set; } = null!;
     }
 }

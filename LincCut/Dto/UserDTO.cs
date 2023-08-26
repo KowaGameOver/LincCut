@@ -2,11 +2,11 @@
 {
     public class UserDTO
     {
-        public int Id { get; set; }
-        public string? Email { get; set; } = null;
-        public string? Password { get; set; } = null;
-        public string? Token { get; set; } = null;
-        public Roles Role { get; set; } = Roles.guest;
+        public int ID { get; set; }
+        public string? EMAIL { get; set; } = string.Empty;
+        public string? PASSWORD { get; set; } = string.Empty;
+        public string? TOKEN { get; set; } = string.Empty;
+        public Roles ROLE { get; set; } = Roles.guest;
 
     }
 }

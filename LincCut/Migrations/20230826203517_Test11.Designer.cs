@@ -3,6 +3,7 @@ using System;
 using LincCut.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LincCut.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230826203517_Test11")]
+    partial class Test11
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -136,14 +139,14 @@ namespace LincCut.Migrations
 
             modelBuilder.Entity("LincCut.Models.Click", b =>
                 {
-                    b.HasOne("LincCut.Models.UrlInfo", "URLINFOS")
+                    b.HasOne("LincCut.Models.UrlInfo", "URLIFOS")
                         .WithMany()
                         .HasForeignKey("URL_ID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_clicks_urls_url_id");
 
-                    b.Navigation("URLINFOS");
+                    b.Navigation("URLIFOS");
                 });
 
             modelBuilder.Entity("LincCut.Models.UrlInfo", b =>
