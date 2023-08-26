@@ -39,11 +39,5 @@ namespace LincCut.Controllers
         {
             return Ok(await _serviceForAuth.LogOut(HttpContext));
         }
-        [Authorize]
-        [HttpGet("test")]
-        public IActionResult test()
-        {
-            return Ok(_userRepository);
-        }
     }
 }
